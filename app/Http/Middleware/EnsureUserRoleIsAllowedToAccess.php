@@ -18,14 +18,30 @@ class EnsureUserRoleIsAllowedToAccess
      */
     public function handle(Request $request, Closure $next)
     {
-        echo 'The Middleware for access role runs everytime a http request is a made';
-        $userRole  = auth()->user()->role;
-        $currentRouteName = Route::currentRouteName();
+        try {
+            $userRole  = auth()->user()->role;
+            $currentRouteName = Route::currentRouteName();
+            if (in_array($currentRouteName, $this->userAccessRole()[$userRole])){
+                return $next($request);
+            } else {
+                abort(403, 'Tidak Mendapatkan Access Role');
+            }
+        } catch (\Throwable $th) {
+            abort(403, 'Tidak Mendapatkan Access Role');
+        }
+    }
 
-        echo 'userRole: ' . $userRole.'</br>';
-        echo 'Current Route Name: ' . $currentRouteName . '</br>';
-
-        exit;
-        return $next($request);
+    private function userAccessRole()
+    {
+        return [
+            'user' => [
+                'dashboard',
+                'users',
+                'user-permission'
+            ],
+            'admin' => [
+                'pages',
+            ]
+            ];
     }
 }

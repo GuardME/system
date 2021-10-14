@@ -26,6 +26,14 @@ Route::group(['middleware' => [
     Route::get('/pages', function () {
         return view('admin.pages');
     })->name('pages');
+
+    Route::get('/users', function () {
+        return view('admin.users');
+    })->name('users');
+
+    Route::get('/user-permission', function () {
+        return view('admin.user-permission');
+    })->name('user-permission');
 });
 
 Route::get('/{urlslug}', FrontPage::class);
