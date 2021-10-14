@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\UserPermission;
 use Closure;
-use Illuminate\Support\Facades\Route;
-
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 class EnsureUserRoleIsAllowedToAccess
 {
@@ -19,29 +19,26 @@ class EnsureUserRoleIsAllowedToAccess
     public function handle(Request $request, Closure $next)
     {
         try {
-            $userRole  = auth()->user()->role;
+            $userRole = auth()->user()->role;
             $currentRouteName = Route::currentRouteName();
-            if (in_array($currentRouteName, $this->userAccessRole()[$userRole])){
+
+            if (UserPermission::isRoleHasRightToAccess($userRole, $currentRouteName)
+                || in_array($currentRouteName, $this->defaultUserAccessRole()[$userRole])) {
                 return $next($request);
             } else {
-                abort(403, 'Tidak Mendapatkan Access Role');
+                abort(403, 'Unauthorized action.');
             }
         } catch (\Throwable $th) {
-            abort(403, 'Tidak Mendapatkan Access Role');
+            abort(403, 'Unauthorized action.');
         }
     }
 
-    private function userAccessRole()
+    private function defaultUserAccessRole()
     {
         return [
-            'user' => [
-                'dashboard',
-                'users',
-                'user-permission'
-            ],
             'admin' => [
-                'pages',
-            ]
-            ];
+                'user-permission',
+            ],
+        ];
     }
 }
